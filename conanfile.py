@@ -6,8 +6,8 @@ import os
 
 class OpenCVConan(ConanFile):
     name = "opencv"
-    version = "4.3.0"
-    license = "BSD-3-Clause"
+    version = "4.5.0"
+    license = "Apache-2.0"
     homepage = "https://github.com/opencv/opencv"
     url = "https://github.com/conan-community/conan-opencv"
     author = "Conan Community"
@@ -68,6 +68,7 @@ class OpenCVConan(ConanFile):
                        "lapack": False,
                        "parallel": None,
                        "quirc": True}
+
     exports_sources = ["CMakeLists.txt", "patches/*.patch"]
     exports = "LICENSE"
     generators = "cmake"
@@ -92,11 +93,11 @@ class OpenCVConan(ConanFile):
             del self.options.gflags
 
     def source(self):
-        sha256 = "68bc40cbf47fdb8ee73dfaf0d9c6494cd095cf6294d99de445ab64cf853d278a"
+        sha256 = "dde4bf8d6639a5d3fe34d5515eab4a15669ded609a1d622350c7ff20dace1907"
         tools.get("{}/archive/{}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         os.rename('opencv-%s' % self.version, self._source_subfolder)
 
-        sha256 = "acb8e89c9e7d1174e63e40532125b60d248b00e517255a98a419d415228c6a55"
+        sha256 = "a65f1f0b98b2c720abbf122c502044d11f427a43212d85d8d2402d7a6339edda"
         tools.get("https://github.com/opencv/opencv_contrib/archive/{}.tar.gz".format(self.version), sha256=sha256)
         os.rename('opencv_contrib-%s' % self.version, 'contrib')
 
@@ -459,14 +460,16 @@ class OpenCVConan(ConanFile):
             tools.replace_in_file(os.path.join(self._source_subfolder, 'cmake', 'OpenCVPCHSupport.cmake'),
                 "ocv_is_opencv_directory(__result ${item})", "set(__result TRUE)")
 
-        tools.patch(base_path=self._source_subfolder,
-            patch_file=os.path.join("patches", "0001-fix-FindOpenEXR-typo.patch"))
-        tools.patch(base_path=self._source_subfolder,
-            patch_file=os.path.join("patches", "0002-fix-FindOpenJPEG-doesnt-exist.patch"))
-        tools.patch(base_path=self._source_subfolder,
-            patch_file=os.path.join("patches", "0003-OpenJPEG-fixed-compilation-and-warnings-with-VS.patch"))
-        tools.patch(base_path=self._source_subfolder,
-            patch_file=os.path.join("patches", "0004-add-protobuf-dependencies.patch"))
+        # KK: These patches were from openc 4.3.0 but not all apply in the current version.
+        #     For mac and linux builds, it seems fine to ignore these (everything still builds properly)
+        # tools.patch(base_path=self._source_subfolder,
+        #     patch_file=os.path.join("patches", "0001-fix-FindOpenEXR-typo.patch"))
+        # tools.patch(base_path=self._source_subfolder,
+        #     patch_file=os.path.join("patches", "0002-fix-FindOpenJPEG-doesnt-exist.patch"))
+        # tools.patch(base_path=self._source_subfolder,
+        #     patch_file=os.path.join("patches", "0003-OpenJPEG-fixed-compilation-and-warnings-with-VS.patch"))
+        # tools.patch(base_path=self._source_subfolder,
+        #     patch_file=os.path.join("patches", "0004-add-protobuf-dependencies.patch"))
 
         cmake = self._configure_cmake()
         cmake.build()
